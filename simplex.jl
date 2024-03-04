@@ -1,5 +1,12 @@
 using LinearAlgebra
+function pretty_tableau(xB, xN, r, Q, p, z0)
+    #xB are the basis
+    col = size(Q)[2]+1 # +1 is for the p
+    row = size(Q)[1] + 1 # +1 is for the z variable
 
+    table = fill(0.0, col, row)
+    print(table)
+end
 function simplex_tableau(A, b, c, Basis)
     # INPUT (add in inputs of correct sizes, as specified below) (Example included)
     # A: m rows * n columns matrix, n >= m preferably
@@ -8,13 +15,27 @@ function simplex_tableau(A, b, c, Basis)
     # Basis: # m elements basis, make sure to write the column indices in order of smallest to largest
     # With all input entered, execute the code. for example, in VS Code, click the topright triangle symbol
 
+
     # DATA SELECTION (Leave this alone)
     m, n = size(A)
+    
+    if size(b) != size(Basis) 
+        println("b and Basis must be of the same size.>>>>> ","b: ", size(b)[1], " Basis: ", size(Basis)[1])
+        exit()
+    elseif size(b)[1] != m
+        println("b must be of dimension m, A is an m x n matrix >>>>> ","b: ", size(b)[1], " m: ", m)
+        exit()
 
-    #########WRAP THIS IN A FUNCTION TO COMPUTE THE FIRST R
-    r = [11]
+    elseif size(c)[1] != n
+        println("c must be of dimension n, A is an m x n matrix>>>>> ","c: ", size(c)[1], " n: ", n)
+        exit()
+    end
 
-
+    #######Instantiations
+    r = [11] #instantiation variable
+    p = 11
+    Q = 11
+    z0 = 11
 
     #while r_i is not >= 0, for all r_i in r
     while !all(x -> x <= 0, r)
@@ -68,17 +89,44 @@ function simplex_tableau(A, b, c, Basis)
         end
     end
 
+    ##DISPLAY FINAL HERE
+    # OUTPUT (Leave this alone)
+    println("\n\n")
+    println("Optimal BFP: ")
+    #pretty printing x_bar
+    matching_index = 1
+    for i in 1:n
+        if i in Basis
+            println("\tx",i, " = ", p[matching_index])
+            matching_index += 1 
+        else ##add a zero
+            println("\tx",i, " = 0")
+        end
+    end
+    println("Optimal Objective Value = ", z0)
 end
 
 
+#look at pset4, problem 4.3
 A = [
-    1 0 0 -2 -9 1 9; 
-    0 1 0 1/3 1 -1/3 -2; 
-    0 0 1 2 3 -1 -12
-    ]
+    -1 -1 1 0 0;
+    0 1 0 1 0;
+    1 -2 0 0 1
+]
+b = [-1; 2; 1]
+c = [1; 1; 0; 0; 0]
+B = [1, 2, 4]
 
-b = [0; 0; 2]
-c = [0; 0; 0; 2; 3; -1; -12]
-B = [1, 4, 6] #2, 5, 6, 7
+
+########PSET6
+# A = [
+#     1 0 0 -2 -9 1 9; 
+#     0 1 0 1/3 1 -1/3 -2; 
+#     0 0 1 2 3 -1 -12
+#     ]
+
+# b = [0; 0; 2]
+# c = [0; 0; 0; 2; 3; -1; -12]
+# B = [1, 4, 6] #2, 5, 6, 7
 # B = [1, 2, 3]
 simplex_tableau(A, b, c, B)
