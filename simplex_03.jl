@@ -212,4 +212,4 @@ b = [0.75; 0.5; 0.15]
 c = [0.5; 15; 4; 0; 0; 0]
 
 B = [4,5,6]
-simplex_tableau(A, b, c, B, 3)
+simplex_tableau(A, b, c, B, 1)
