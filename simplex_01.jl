@@ -1,12 +1,69 @@
+#Written by Thien K. M. Bui and Cuong Chi Tran
 using LinearAlgebra
-function pretty_tableau(xB, xN, r, Q, p, z0)
-    #xB are the basis
-    col = size(Q)[2]+1 # +1 is for the p
-    row = size(Q)[1] + 1 # +1 is for the z variable
 
-    table = fill(0.0, col, row)
-    print(table)
+#printing the tableau
+function pretty_tableau(xB, xN, r, Q, p, z0)
+    row_count = size(xB)[1]+1 #the +1 is for the z row
+    for i in 1:row_count 
+        if i < row_count
+            #print the basic vars
+            print("x_",xB[i], " = ", p[i]) #x_1 = 1 
+            for j in 1:size(xN)[1]
+                if Q[i,j] != 0
+                    if Q[i,j] > 0
+                        print(" + ", round(Q[i,j], sigdigits = 3), "x_", xN[j])
+                    else
+                        print(" - ", round(abs(Q[i,j]), sigdigits = 3), "x_", xN[j])
+                    end
+                else
+                    print("\t  ")
+                end
+            end
+        else
+            #print z row
+            print("  z = ", z0[1])
+            for j in 1:size(xN)[1]
+                if r[j] != 0
+                    if r[j] > 0
+                        print(" + ", round(r[j], sigdigits=3), "x_", xN[j])
+                    else
+                        print(" - ", round(abs(r[j]), sigdigits=3), "x_", xN[j])
+                    end
+                else
+                    print("       ")
+                end
+            end
+        end
+        println()
+    end
+    println()
 end
+
+
+#compute tableau components
+function tableau_components(A, b, c, Basis)
+    m, n = size(A)
+    AB = A[:, Basis]
+    M = []
+    for i in 1:n
+        push!(M,i)
+    end
+    N = setdiff(M, Basis)
+    AN = A[:, N]
+    cT = transpose(c)
+    cTB = cT[:, Basis]
+    cN = c[N,:]
+    # cTN = cT[:, N]
+    # cN = transpose(cTN)
+    
+    # CALCULATION (Leave this alone)
+    Q = -inv(AB) * AN
+    p = inv(AB) * b
+    z0 = (cTB * inv(AB)) * b
+    r = cN - transpose((cTB * inv(AB)) * AN)
+    return p, Q, z0, r, N
+end
+
 function simplex_tableau(A, b, c, Basis)
     # INPUT (add in inputs of correct sizes, as specified below) (Example included)
     # A: m rows * n columns matrix, n >= m preferably
@@ -36,6 +93,8 @@ function simplex_tableau(A, b, c, Basis)
     p = 11
     Q = 11
     z0 = 11
+    N = 11
+    print_initial = 1
 
     #while r_i is not >= 0, for all r_i in r
     while !all(x -> x <= 0, r)
@@ -58,15 +117,15 @@ function simplex_tableau(A, b, c, Basis)
         z0 = (cTB * inv(AB)) * b
         r = cN - transpose((cTB * inv(AB)) * AN)
 
-        # OUTPUT (Leave this alone)
-        println("Basis B: ", Basis)
-        println("p = ", p)
-        println("Q = ")
-        display(Q) #pretty printing display
-        println("z0 = ", z0)
+        # p, Q, z0, r, N = tableau_components(A, b, c, Basis)
 
-        #we're done when all of r is positive
-        println("r = ", r)
+        if print_initial == 1
+            println("Initial Tableau")
+            pretty_tableau(Basis, N, r, Q, p, z0) 
+            print_initial = 0
+        else 
+            pretty_tableau(Basis, N, r, Q, p, z0) 
+        end
 
         #Pivoting rule Dantzig rule
         #We pivot the largest entry in r
@@ -81,9 +140,13 @@ function simplex_tableau(A, b, c, Basis)
                     push!(normalized_constraints, (p[index] / -Q_i[index], index))
                 end
             end
+            #THIS IS THE DANTZIG RULE, CHANGE LINE BELOW FOR THE OTHER PIVOTING RULES
             tightest_constraint_index = findmin(normalized_constraints)[1][2] #the smallest of the normalized constraint is the strictest
-            Basis[tightest_constraint_index] = N[largest_index] 
-            Basis = sort(Basis; alg=QuickSort)    
+            if r[largest_index] > 0
+                println("x_", N[largest_index], " in, x_", Basis[tightest_constraint_index], " out")   
+                Basis[tightest_constraint_index] = N[largest_index] 
+                Basis = sort(Basis; alg=QuickSort)
+            end
         else 
             println("WE DONE")
         end
@@ -91,7 +154,7 @@ function simplex_tableau(A, b, c, Basis)
 
     ##DISPLAY FINAL HERE
     # OUTPUT (Leave this alone)
-    println("\n\n")
+    println("\n")
     println("Optimal BFP: ")
     #pretty printing x_bar
     matching_index = 1
@@ -100,7 +163,7 @@ function simplex_tableau(A, b, c, Basis)
             println("\tx",i, " = ", p[matching_index])
             matching_index += 1 
         else ##add a zero
-            println("\tx",i, " = 0")
+            println("\tx",i, " = 0.0")
         end
     end
     println("Optimal Objective Value = ", z0)
