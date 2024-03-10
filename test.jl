@@ -1,31 +1,38 @@
 using LinearAlgebra
 
-function pretty_tableau(xB, xN, r, Q, p, z0)
-    #xB are the basis
-    col = size(Q)[2]+2 # +2 is for the p and the xB
-    row = size(Q)[1] + 1 # +1 is for the z variable
 
-    table = fill(0.0, col, row)
-    table[1,1] = nothing
-    
-    println(table[:,1])
-    # exit()
-    for i in 2:row
-        
-        for j in 2:col
-            println(i, j)
-            println(table[i, j], "CHECK THIS")
-        end
+function compute_tableau(A, b, c, Basis)
+    m, n = size(A)
+    AB = A[:, Basis]
+    M = []
+    for i in 1:n
+        push!(M,i)
     end
-    print(table)
+    N = setdiff(M, Basis)
+    AN = A[:, N]
+    cT = transpose(c)
+    cTB = cT[:, Basis]
+    cN = c[N,:]
+    # cTN = cT[:, N]
+    # cN = transpose(cTN)
+    
+    # CALCULATION (Leave this alone)
+    Q = -inv(AB) * AN
+    p = inv(AB) * b
+    z0 = (cTB * inv(AB)) * b
+    r = cN - transpose((cTB * inv(AB)) * AN)
+    return p, Q, z0, r
 end
 
-xB = [3, 4, 5]
-xN = [1,2]
+A = [
+    -1 -1 1 0 0;
+    0 1 0 1 0;
+    1 -2 0 0 1
+]
+b = [-1; 2; 1]
+c = [1; 1; 0; 0; 0]
+B = [1, 2, 4]
 
-r = [1;1]
-Q = [1 -1; -1 0; 0 -1]
-p = [1; 3; 2]
-z0 = [0]
 
-pretty_tableau(xB, xN, r, Q, p, z0)
+p, Q, z0, r = compute_tableau(A,b,c,B)
+println(p, Q, z0, r)
